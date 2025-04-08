@@ -2,7 +2,7 @@ package main
 
 import "net/http"
 
-func (apiCfg *apiConfig)handlerAdminReset(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) handlerAdminReset(w http.ResponseWriter, r *http.Request) {
 	if apiCfg.platform != "dev" {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return

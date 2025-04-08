@@ -1,17 +1,18 @@
 package main
 
 import (
+	"chirpy/internal/database"
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
-func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) handlerChirp (w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Body string `json:"body"`
-	}
-	type returnVals struct {
-		CleanedBody string `json:"cleaned_body"`
+		UserID uuid.UUID `json:"user_id"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -34,10 +35,26 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 		"fornax":    {},
 	}
 	cleaned := getCleanedBody(params.Body, badWords)
+	dbParams := database.CreateChirpParams{
+		Body: cleaned,
+		UserID: params.UserID,
+	}
 
-	respondWithJSON(w, http.StatusOK, returnVals{
-		CleanedBody: cleaned,
-	})
+	dbChirp, err := apiCfg.db.CreateChirp(r.Context(), dbParams)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp", err)
+		return
+	}
+
+	chirp := Chirp{
+		ID: dbChirp.ID,
+		CreatedAt: dbChirp.CreatedAt,
+		UpdatedAt: dbChirp.UpdatedAt,
+		Body: dbChirp.Body,
+		UserID: dbChirp.UserID,
+	}
+	
+	respondWithJSON(w, http.StatusCreated, chirp)
 }
 
 func getCleanedBody(body string, badWords map[string]struct{}) string {
