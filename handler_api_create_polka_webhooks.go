@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chirpy/internal/auth"
 	"encoding/json"
 	"net/http"
 
@@ -15,9 +16,15 @@ func (apiCfg *apiConfig) handlerPolkaWebhooks(w http.ResponseWriter, r *http.Req
 		} `json:"data"`
 	}
 
+	apiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil || apiKey != apiCfg.polkaKey {
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized", err)
+		return
+	}
+
 	webhookReq := parameters{}
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&webhookReq)
+	err = decoder.Decode(&webhookReq)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request JSON body", err)
 		return
