@@ -20,5 +20,14 @@ WHERE refresh_tokens.token = $1
 AND refresh_tokens.expires_at > NOW()
 AND refresh_tokens.revoked_at IS NULL;
 
+-- name: UpdateUser :one
+UPDATE users
+SET 
+    email = $1,
+    hashed_password = $2,
+    updated_at = NOW()
+WHERE id = $3
+RETURNING *;
+
 -- name: DeleteAllUsers :exec
 DELETE FROM users;
