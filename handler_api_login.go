@@ -22,6 +22,7 @@ func (apiCfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
         Email string `json:"email"`
         Token string `json:"token"`
         RefreshToken string `json:"refresh_token"`
+		IsChirpyRed bool `json:"is_chirpy_red"`
     }
 
 	decoder := json.NewDecoder(r.Body)
@@ -76,6 +77,7 @@ func (apiCfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		Email: dbUser.Email,
 		Token: token,
 		RefreshToken: refreshToken,
+		IsChirpyRed: dbUser.IsChirpyRed,
 	}
 
 	respondWithJSON(w, http.StatusOK, resp)

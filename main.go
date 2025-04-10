@@ -26,6 +26,7 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Email string `json:"email"`
+	IsChirpyRed bool `json:"is_chirpy_red"`
 	Password string `json:"-"`
 }
 
@@ -69,23 +70,32 @@ func main() {
 	fileServerHandler := apiCfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot)))) 
 	mux.Handle("/app/", fileServerHandler)
 	
+	// GET requests on /admin
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	
+	// POST requests on /admin
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerAdminReset)
 	
+	// GET requests on /api
 	mux.HandleFunc("GET /api/healthz", handlerReadiness)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiCfg.handlerGetChirp)
 	mux.HandleFunc("GET /api/chirps", apiCfg.handlerGetChirps)
-
+	
+	// POST requests on /api
 	mux.HandleFunc("POST /api/chirps", apiCfg.handlerChirp)
 	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
 	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefresh)
 	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevoke)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerUsers)
-
+	
+	// PUT requests on /api
 	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateUser)
 	
+	// DELETE requests on /api
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.handlerDeleteChirp)
+	
+	// POST requests on /api/polka
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handlerPolkaWebhooks)
 	
 	srv := &http.Server{
 		Addr:    ":" + port,
